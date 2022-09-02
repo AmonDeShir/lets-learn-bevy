@@ -18,10 +18,6 @@ pub struct MainCamera;
 #[derive(Component, Debug, PartialEq)]
 pub struct Position(pub i16, pub i16);
 
-impl Position {
-  pub const NONE: Position = Position(-1, -1);
-}
-
 impl Plugin for MapPlugin {
   fn build(&self, app: &mut bevy::prelude::App) {
     app.add_plugin(PixelCameraPlugin);

@@ -1,3 +1,4 @@
+use animator::AnimatorPlugin;
 use bevy::{prelude::App, DefaultPlugins, window::WindowDescriptor};
 use cursor::CursorPlugin;
 use gameplay::GameplayPlugin;
@@ -8,6 +9,7 @@ mod map;
 mod turn;
 mod cursor;
 mod gameplay;
+mod animator;
 
 fn main() {
   App::new()
@@ -23,5 +25,6 @@ fn main() {
     .add_plugin(TurnPlugin)
     .add_plugin(GameplayPlugin)
     .add_plugin(CursorPlugin)
+    .add_plugin(AnimatorPlugin)
     .run();
 } 

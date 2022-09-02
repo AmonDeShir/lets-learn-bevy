@@ -1,12 +1,14 @@
-use bevy::input::ButtonState;
-use bevy::prelude::{Plugin, Component, Commands, AssetServer, EventReader, Res, Query, Camera, GlobalTransform, With, Transform, Handle, Image, Vec3, MouseButton};
-use bevy::input::mouse::{MouseMotion, MouseButtonInput}; 
+use std::collections::LinkedList;
+
+use bevy::prelude::{Plugin, Component, Commands, AssetServer, EventReader, Res, Query, Camera, GlobalTransform, With, Transform, Handle, Image, Vec3};
+use bevy::input::mouse::MouseMotion; 
 use bevy::window::Windows;
 use bevy::render::camera::RenderTarget;
 use bevy::sprite::SpriteBundle;
 
+use crate::animator::{ScaleAnimator, AnimationState};
 use crate::map::{cursor_to_word, MainCamera};
-use crate::turn::Turn;
+use crate::turn::TurnChangeEvent;
 
 pub struct CursorPlugin;
 
@@ -45,7 +47,7 @@ impl Plugin for CursorPlugin {
   fn build(&self, app: &mut bevy::prelude::App) {
     app.add_startup_system(init_cursor);
     app.add_system(handle_move);
-    app.add_system(handle_mouse_up);
+    app.add_system(handle_turn_change);
   }
 }
 
@@ -54,6 +56,7 @@ pub fn init_cursor(mut commands: Commands, asset_server: Res<AssetServer>) {
     .spawn()
     .insert(Cursor)
     .insert(Mode(ModeValue::Circle))
+    .insert(ScaleAnimator(LinkedList::new()))
     .insert_bundle(SpriteBundle {
       texture: asset_server.load("circle.png"),
       transform: Transform {
@@ -99,22 +102,24 @@ pub fn handle_move(
   transform.translation.y = position.y.into();
 }
 
-pub fn handle_mouse_up(
-  mut events: EventReader<MouseButtonInput>, 
+pub fn handle_turn_change(
+  mut events: EventReader<TurnChangeEvent>, 
   asset_server: Res<AssetServer>, 
-  turn: Res<Turn>,
-  mut query: Query<(&mut Handle<Image>, &mut Mode), With<Cursor>>
+  mut query: Query<(&mut Transform, &mut ScaleAnimator, &mut Handle<Image>, &mut Mode), With<Cursor>>
 ) {
-  for event in events.iter() {
-    if event.state == ButtonState::Released && event.button == MouseButton::Left {
-      let (mut image, mut mode) = query.get_single_mut().expect("Cursor(handle_mouse_up system) error: There is more or less than one cursor!");
-
-      if ModeValue::from_bool(turn.0) != mode.0 {
-        mode.0 = ModeValue::from_bool(turn.0);
-        *image = asset_server.load(&mode.0.to_texture_path());
-        
-        println!("Change to {}, {:?}", &mode.0.to_texture_path(), image)
+  for TurnChangeEvent(turn) in events.iter() {
+    let (mut transform, mut animator, mut image, mut mode) = query.get_single_mut().expect("Cursor(handle_mouse_up system) error: There is more or less than one cursor!");
+    
+    if ModeValue::from_bool(*turn) != mode.0 {
+      mode.0 = ModeValue::from_bool(*turn);
+      *image = asset_server.load(&mode.0.to_texture_path());
+      transform.scale = Vec3::new(0.0, 0.0, 1.0);
+      
+      if animator.0.len() > 0 {
+        animator.0.clear();
       }
+
+      animator.0.push_back(AnimationState::Request(Vec3::new(0.5, 0.5, 1.0), 0.25));
     }
   }
 }
