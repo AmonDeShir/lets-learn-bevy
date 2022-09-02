@@ -1,7 +1,9 @@
-use bevy::{prelude::{App, ClearColor, Color}, DefaultPlugins, window::WindowDescriptor};
+use bevy::{prelude::App, DefaultPlugins, window::WindowDescriptor};
+use gameplay::GameplayPlugin;
 use map::MapPlugin;
 
 mod map;
+mod gameplay;
 
 fn main() {
   App::new()
@@ -12,8 +14,8 @@ fn main() {
       height: 512.0,
       ..Default::default()
     })
-    .insert_resource(ClearColor(Color::rgb(0.6, 0.6, 0.6)))
     .add_plugins(DefaultPlugins)
     .add_plugin(MapPlugin)
+    .add_plugin(GameplayPlugin)
     .run();
 } 
