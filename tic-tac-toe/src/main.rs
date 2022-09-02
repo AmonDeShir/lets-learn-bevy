@@ -1,8 +1,12 @@
 use bevy::{prelude::App, DefaultPlugins, window::WindowDescriptor};
+use cursor::CursorPlugin;
 use gameplay::GameplayPlugin;
 use map::MapPlugin;
+use turn::TurnPlugin;
 
 mod map;
+mod turn;
+mod cursor;
 mod gameplay;
 
 fn main() {
@@ -16,6 +20,8 @@ fn main() {
     })
     .add_plugins(DefaultPlugins)
     .add_plugin(MapPlugin)
+    .add_plugin(TurnPlugin)
     .add_plugin(GameplayPlugin)
+    .add_plugin(CursorPlugin)
     .run();
 } 

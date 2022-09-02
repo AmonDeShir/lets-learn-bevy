@@ -5,23 +5,31 @@ use bevy::input::{mouse::MouseButtonInput, ButtonState};
 use bevy::sprite::SpriteBundle;
 
 use crate::map::{MainCamera, cursor_to_word, tile_pos_from_cursor, Position, Tile, IsFree};
+use crate::turn::Turn;
 
 pub struct GameplayPlugin;
 
 #[derive(Component)]
-pub struct Circle;
+pub struct Circle(i16, i16);
 
-pub struct Turn(bool);
+#[derive(Component)]
+pub struct Cross(i16, i16);
 
-impl Default for Turn {
-  fn default() -> Self {
-      Turn(false)
-  }
+impl Circle {
+  pub fn new(pos: &Position) -> Circle {
+    Circle(pos.0.clone(), pos.1.clone())
+  }  
 }
+
+impl Cross {
+  pub fn new(pos: &Position) -> Cross {
+    Cross(pos.0.clone(), pos.1.clone())
+  }  
+}
+
 
 impl Plugin for GameplayPlugin {
   fn build(&self, app: &mut bevy::prelude::App) {
-    app.init_resource::<Turn>();
     app.add_system(handle_move);
   }
 }
@@ -35,7 +43,7 @@ pub fn handle_move(
   mouse_query: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
   mut tile_query: Query<(&Position, &mut IsFree), With<Tile>>
 ) {
-  let mut position = Position::NONE;
+  let mut position = Option::None;
   
   //Get tile position 
   for event in events.iter() {
@@ -49,14 +57,15 @@ pub fn handle_move(
       }; 
 
       if let Some(screen_pos) = window.cursor_position() {
-        position = tile_pos_from_cursor(cursor_to_word(screen_pos, window, camera_transform, camera));
+        position = Option::Some(tile_pos_from_cursor(cursor_to_word(screen_pos, window, camera_transform, camera)));
       }
     }
   }
 
-  if position == Position::NONE {
-    return;
-  }
+  let position = match position {
+    Some(pos) => pos,
+    None => return
+  };
 
   for (tile_position, mut is_free) in tile_query.iter_mut() {
     if tile_position != &position || !is_free.0 {
@@ -67,7 +76,7 @@ pub fn handle_move(
     is_free.0 = false;
 
     //Spawn cross or circle
-    commands.spawn_bundle(SpriteBundle {
+    let mut output = commands.spawn_bundle(SpriteBundle {
       texture: asset_server.load(if turn.0 { "cross.png" } else { "circle.png" }),
       transform: Transform { 
         translation: Vec3 { 
@@ -79,6 +88,13 @@ pub fn handle_move(
       },
       ..Default::default()
     });
+
+    if turn.0 { 
+      output.insert(Cross::new(&position));
+    } 
+    else { 
+      output.insert(Circle::new(&position));
+    }
 
     //Change turn
     commands.insert_resource(Turn(!turn.0));
