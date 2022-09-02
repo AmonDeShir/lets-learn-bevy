@@ -1,4 +1,5 @@
 use animator::AnimatorPlugin;
+use asset_loader::AssetLoaderPlugin;
 use bevy::{prelude::App, DefaultPlugins, window::WindowDescriptor};
 use cursor::CursorPlugin;
 use gameplay::GameplayPlugin;
@@ -10,6 +11,7 @@ mod turn;
 mod cursor;
 mod gameplay;
 mod animator;
+mod asset_loader;
 
 fn main() {
   App::new()
@@ -21,6 +23,7 @@ fn main() {
       ..Default::default()
     })
     .add_plugins(DefaultPlugins)
+    .add_plugin(AssetLoaderPlugin)
     .add_plugin(MapPlugin)
     .add_plugin(TurnPlugin)
     .add_plugin(GameplayPlugin)

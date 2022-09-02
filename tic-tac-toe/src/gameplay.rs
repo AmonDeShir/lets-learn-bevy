@@ -1,12 +1,13 @@
 use std::collections::LinkedList;
 
-use bevy::prelude::{Plugin, Component, MouseButton, Res, Query, With, Camera, GlobalTransform, EventReader, Transform, Commands, AssetServer, Vec3, EventWriter};
+use bevy::prelude::{Plugin, Component, MouseButton, Res, Query, With, Camera, GlobalTransform, EventReader, Transform, Commands, Vec3, EventWriter};
 use bevy::window::Windows; 
 use bevy::render::camera::RenderTarget;
 use bevy::input::{mouse::MouseButtonInput, ButtonState};
 use bevy::sprite::SpriteBundle;
 
 use crate::animator::{TranslationAnimator, AnimationState, ScaleAnimator};
+use crate::asset_loader::Textures;
 use crate::map::{MainCamera, cursor_to_word, tile_pos_from_cursor, Position, Tile, IsFree};
 use crate::turn::{Turn, TurnChangeEvent};
 
@@ -40,7 +41,7 @@ pub fn handle_move(
   mut commands: Commands, 
   mut events: EventReader<MouseButtonInput>, 
   mut ev_turn: EventWriter<TurnChangeEvent>,
-  asset_server: Res<AssetServer>, 
+  textures: Res<Textures>, 
   turn: Res<Turn>,
   window: Res<Windows>,
   mouse_query: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
@@ -89,7 +90,7 @@ pub fn handle_move(
 
     //Spawn cross or circle
     let mut output = commands.spawn_bundle(SpriteBundle {
-      texture: asset_server.load(if turn.0 { "cross.png" } else { "circle.png" }),
+      texture: if turn.0 { textures.cross.clone() } else { textures.circle.clone() },
       transform: Transform { 
         translation: Vec3 { 
           x: cursor.x,

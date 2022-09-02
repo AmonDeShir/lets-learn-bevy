@@ -1,7 +1,9 @@
-use bevy::prelude::{Plugin, Commands, Res, AssetServer, Component, Transform, Vec3, Color, Vec2, GlobalTransform, Camera};
+use bevy::prelude::{Plugin, Commands, Res, Component, Transform, Vec3, Color, Vec2, GlobalTransform, Camera};
 use bevy::sprite::{SpriteBundle};
 use bevy::window::Window;
 use bevy_pixel_camera::{PixelCameraBundle, PixelCameraPlugin, PixelBorderPlugin};
+
+use crate::asset_loader::Textures;
 
 pub struct MapPlugin;
 
@@ -48,7 +50,7 @@ pub fn cursor_to_word(pos: Vec2, window: &Window, camera_transform: &GlobalTrans
   world_pos.truncate()
 }
 
-pub fn setup_grid(mut commands: Commands, asset_server: Res<AssetServer>) {
+pub fn setup_grid(mut commands: Commands, textures: Res<Textures>) {
   for x in -1..2 {
     for y in -1..2 {
       commands
@@ -57,7 +59,7 @@ pub fn setup_grid(mut commands: Commands, asset_server: Res<AssetServer>) {
         .insert(IsFree(true))
         .insert(Position(x + 1, y + 1))
         .insert_bundle(SpriteBundle {
-          texture: asset_server.load("tile.png"),
+          texture: textures.tile.clone(),
           transform: Transform { 
             translation: Vec3 { 
               x: (x * 32).into(), 
@@ -77,9 +79,9 @@ pub fn tile_pos_from_cursor(pos: Vec2) -> Position {
   Position(pos.x as i16, pos.y as i16)
 }
 
-pub fn create_map_border(mut commands: Commands, asset_server: Res<AssetServer>) {
+pub fn create_map_border(mut commands: Commands, textures: Res<Textures>) {
   commands.spawn_bundle(SpriteBundle {
-      texture: asset_server.load("border.png"),
+      texture: textures.border.clone(),
       transform: Transform { 
         translation: Vec3 { 
           x: 0.0, 

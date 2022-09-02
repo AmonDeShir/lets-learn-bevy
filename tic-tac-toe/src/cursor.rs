@@ -1,12 +1,13 @@
 use std::collections::LinkedList;
 
-use bevy::prelude::{Plugin, Component, Commands, AssetServer, EventReader, Res, Query, Camera, GlobalTransform, With, Transform, Handle, Image, Vec3};
+use bevy::prelude::{Plugin, Component, Commands, EventReader, Res, Query, Camera, GlobalTransform, With, Transform, Handle, Image, Vec3};
 use bevy::input::mouse::MouseMotion; 
 use bevy::window::Windows;
 use bevy::render::camera::RenderTarget;
 use bevy::sprite::SpriteBundle;
 
 use crate::animator::{ScaleAnimator, AnimationState};
+use crate::asset_loader::Textures;
 use crate::map::{cursor_to_word, MainCamera};
 use crate::turn::TurnChangeEvent;
 
@@ -30,12 +31,12 @@ impl ModeValue {
     return ModeValue::Circle;
   }
 
-  pub fn to_texture_path(&self) -> String {
+  pub fn to_texture(&self, textures: &Textures) -> Handle<Image> {
     if *self == ModeValue::Circle {
-      return "circle.png".to_string();
+      return textures.circle.clone();
     }
 
-    return "cross.png".to_string();
+    return textures.cross.clone()
   }
 }
 
@@ -51,14 +52,14 @@ impl Plugin for CursorPlugin {
   }
 }
 
-pub fn init_cursor(mut commands: Commands, asset_server: Res<AssetServer>) {
+pub fn init_cursor(mut commands: Commands, textures: Res<Textures>) {
   commands
     .spawn()
     .insert(Cursor)
     .insert(Mode(ModeValue::Circle))
     .insert(ScaleAnimator(LinkedList::new()))
     .insert_bundle(SpriteBundle {
-      texture: asset_server.load("circle.png"),
+      texture: textures.circle.clone(),
       transform: Transform {
         translation: Vec3::new(0.0, 0.0, 2.0),
         scale: Vec3::new(0.5, 0.5, 1.0),
@@ -104,7 +105,7 @@ pub fn handle_move(
 
 pub fn handle_turn_change(
   mut events: EventReader<TurnChangeEvent>, 
-  asset_server: Res<AssetServer>, 
+  textures: Res<Textures>, 
   mut query: Query<(&mut Transform, &mut ScaleAnimator, &mut Handle<Image>, &mut Mode), With<Cursor>>
 ) {
   for TurnChangeEvent(turn) in events.iter() {
@@ -112,7 +113,7 @@ pub fn handle_turn_change(
     
     if ModeValue::from_bool(*turn) != mode.0 {
       mode.0 = ModeValue::from_bool(*turn);
-      *image = asset_server.load(&mode.0.to_texture_path());
+      *image = mode.0.to_texture(&textures);
       transform.scale = Vec3::new(0.0, 0.0, 1.0);
       
       if animator.0.len() > 0 {
