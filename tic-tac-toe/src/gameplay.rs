@@ -1,11 +1,14 @@
 use std::collections::LinkedList;
+use std::time::Duration;
 
-use bevy::prelude::{Plugin, Component, MouseButton, Res, Query, With, Camera, GlobalTransform, EventReader, Transform, Commands, Vec3, EventWriter};
+use bevy::prelude::{Plugin, Component, MouseButton, Res, Query, With, Camera, GlobalTransform, EventReader, Transform, Commands, Vec3, EventWriter, SystemSet, Without, Entity, ResMut};
+use bevy::time::{Timer, Time};
 use bevy::window::Windows; 
 use bevy::render::camera::RenderTarget;
 use bevy::input::{mouse::MouseButtonInput, ButtonState};
 use bevy::sprite::SpriteBundle;
 
+use crate::GameState;
 use crate::animator::{TranslationAnimator, AnimationState, ScaleAnimator};
 use crate::asset_loader::Textures;
 use crate::map::{MainCamera, cursor_to_word, tile_pos_from_cursor, Position, Tile, IsFree};
@@ -18,6 +21,7 @@ pub struct Circle(i16, i16);
 
 #[derive(Component)]
 pub struct Cross(i16, i16);
+
 
 impl Circle {
   pub fn new(pos: &Position) -> Circle {
@@ -33,7 +37,9 @@ impl Cross {
 
 impl Plugin for GameplayPlugin {
   fn build(&self, app: &mut bevy::prelude::App) {
-    app.add_system(handle_move);
+    app.add_system_set(SystemSet::on_update(GameState::Game).with_system(handle_move));
+    app.add_system_set(SystemSet::on_enter(GameState::Game).with_system(start_gameplay));
+    app.add_system_set(SystemSet::on_exit(GameState::Game).with_system(clear_gameplay));
   }
 }
 
@@ -41,6 +47,8 @@ pub fn handle_move(
   mut commands: Commands, 
   mut events: EventReader<MouseButtonInput>, 
   mut ev_turn: EventWriter<TurnChangeEvent>,
+  mut gameplay_delay: ResMut<GameplayDelayTimer>,
+  time: Res<Time>,
   textures: Res<Textures>, 
   turn: Res<Turn>,
   window: Res<Windows>,
@@ -49,6 +57,12 @@ pub fn handle_move(
 ) {
   let mut tile_position = Option::None;
   let mut cursor_position = Option::None;
+
+  gameplay_delay.timer.tick(time.delta());
+
+  if !gameplay_delay.timer.finished() {
+    return;
+  }
 
   //Get tile position 
   for event in events.iter() {
@@ -135,3 +149,27 @@ pub fn handle_move(
   return;
 }
 
+#[derive(Component)]
+pub struct GameplayDelayTimer {
+  pub timer: Timer,
+}
+
+fn clear_gameplay(
+  mut commands: Commands,
+  crosses: Query<Entity, (With<Cross>, Without<Circle>)>,
+  circles: Query<Entity, (With<Circle>, Without<Cross>)>,
+) {
+  for entity in crosses.iter() {
+    commands.entity(entity).despawn();
+  }
+
+  for entity in circles.iter() {
+    commands.entity(entity).despawn();
+  }
+}
+
+fn start_gameplay(mut commands: Commands) {
+  commands.insert_resource(GameplayDelayTimer {
+    timer: Timer::new(Duration::from_secs(1), false)
+  }); 
+}

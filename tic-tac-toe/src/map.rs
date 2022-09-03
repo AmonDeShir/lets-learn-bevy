@@ -1,14 +1,18 @@
-use bevy::prelude::{Plugin, Commands, Res, Component, Transform, Vec3, Color, Vec2, GlobalTransform, Camera};
+use bevy::prelude::{Plugin, Commands, Res, Component, Transform, Vec3, Color, Vec2, GlobalTransform, Camera, Visibility, SystemSet, Query, With, Without};
 use bevy::sprite::{SpriteBundle};
 use bevy::window::Window;
 use bevy_pixel_camera::{PixelCameraBundle, PixelCameraPlugin, PixelBorderPlugin};
 
+use crate::GameState;
 use crate::asset_loader::Textures;
 
 pub struct MapPlugin;
 
 #[derive(Component)]
 pub struct Tile;
+
+#[derive(Component)]
+pub struct Border;
 
 #[derive(Component)]
 pub struct IsFree(pub bool);
@@ -27,6 +31,8 @@ impl Plugin for MapPlugin {
     app.add_startup_system(add_camera);
     app.add_startup_system(setup_grid);
     app.add_startup_system(create_map_border);
+    app.add_system_set(SystemSet::on_enter(GameState::Game).with_system(show_map));
+    app.add_system_set(SystemSet::on_exit(GameState::Game).with_system(hide_map));
   }
 }
 
@@ -59,6 +65,7 @@ pub fn setup_grid(mut commands: Commands, textures: Res<Textures>) {
         .insert(IsFree(true))
         .insert(Position(x + 1, y + 1))
         .insert_bundle(SpriteBundle {
+          visibility: Visibility { is_visible: false },
           texture: textures.tile.clone(),
           transform: Transform { 
             translation: Vec3 { 
@@ -81,6 +88,7 @@ pub fn tile_pos_from_cursor(pos: Vec2) -> Position {
 
 pub fn create_map_border(mut commands: Commands, textures: Res<Textures>) {
   commands.spawn_bundle(SpriteBundle {
+      visibility: Visibility { is_visible: false },
       texture: textures.border.clone(),
       transform: Transform { 
         translation: Vec3 { 
@@ -91,5 +99,32 @@ pub fn create_map_border(mut commands: Commands, textures: Res<Textures>) {
         ..Default::default()
       },
       ..Default::default()
-    });
+    })
+    .insert(Border);
+}
+
+pub fn show_map(
+  mut tiles: Query<&mut Visibility, (With<Tile>, Without<Border>)>,
+  mut border: Query<&mut Visibility, (With<Border>, Without<Tile>)>,
+) {
+  for mut visibility in tiles.iter_mut() {
+    visibility.is_visible = true;
+  }
+
+  for mut visibility in border.iter_mut() {
+    visibility.is_visible = true;
+  }
+}
+
+pub fn hide_map(
+  mut tiles: Query<&mut Visibility, (With<Tile>, Without<Border>)>,
+  mut border: Query<&mut Visibility, (With<Border>, Without<Tile>)>,
+) {
+  for mut visibility in tiles.iter_mut() {
+    visibility.is_visible = false;
+  }
+
+  for mut visibility in border.iter_mut() {
+    visibility.is_visible = false;
+  }
 }
