@@ -2626,6 +2626,12 @@ dependencies = [
 [[package]]
 name = "poke-clone"
 version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy_pixel_camera",
+ "kayak_ui",
+ "rand",
+]
 
 [[package]]
 name = "pp-rs"
