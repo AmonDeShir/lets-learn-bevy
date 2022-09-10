@@ -3,6 +3,10 @@ use bevy::{DefaultPlugins, window::WindowDescriptor};
 use ui::UiPlugin;
 
 mod ui;
+mod poketclone;
+mod poketclone_type;
+mod poketclone_attack;
+mod loading;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Copy)]
 pub enum GameState {

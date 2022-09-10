@@ -1,6 +1,6 @@
-use bevy::prelude::{Res, Commands};
+use bevy::prelude::Commands;
 use kayak_ui::bevy::BevyContext;
-use kayak_ui::core::{rsx, render, widget, Color, Binding, Bound};
+use kayak_ui::core::{rsx, render, widget, Color};
 use kayak_ui::widgets::{App, Text};
 use kayak_ui::core::styles::{StyleProp, Units, Style};
 

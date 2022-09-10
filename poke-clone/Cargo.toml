@@ -10,3 +10,6 @@ bevy = { version = "0.8.0",  features = ["dynamic"] }
 kayak_ui = { git="https://github.com/StarArawn/kayak_ui", rev="9fbb25774b2ddac5c2194f502a8127c16d36568e", features = ["bevy_renderer"] }
 bevy_pixel_camera = "0.2.0"
 rand = "0.8.5"
+serde = "1.0.144"
+serde_yaml = "0.9"
+iyes_loopless = "0.7.1"

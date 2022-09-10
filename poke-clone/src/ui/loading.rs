@@ -1,11 +1,8 @@
 use bevy::prelude::{Commands, Res, ResMut};
 use kayak_ui::bevy::{BevyContext, ImageManager};
 use kayak_ui::core::{rsx, render, widget, OnEvent, WidgetProps};
-use kayak_ui::widgets::{App, Background, Image};
+use kayak_ui::widgets::{App, Background, Image, Text};
 use kayak_ui::core::styles::{StyleProp, Units, Style};
-
-use crate::ui::button::Button;
-use crate::GameState;
 
 use super::LoadingAssets;
 
@@ -25,9 +22,18 @@ impl WidgetProps for LoadingProps {
 
 #[widget]
 fn Loading(props: LoadingProps) {
+  let image_styles = Style {
+    left: StyleProp::Value(Units::Stretch(0.8)),
+    right: StyleProp::Value(Units::Stretch(0.8)),
+    width: StyleProp::Value(Units::Pixels(596.0)),
+    height: StyleProp::Value(Units::Pixels(230.0)),
+    ..Default::default()
+  };
+
   let text_styles = Style {
-    left: StyleProp::Value(Units::Stretch(1.0)),
-    right: StyleProp::Value(Units::Stretch(1.0)),
+    left: StyleProp::Value(Units::Stretch(0.8)),
+    right: StyleProp::Value(Units::Stretch(0.8)),
+    top: StyleProp::Value(Units::Pixels(50.0)),
     ..Default::default()
   };
 
@@ -45,7 +51,12 @@ fn Loading(props: LoadingProps) {
   rsx! {
     <>
       <Background styles={Some(container_styles)}>
-        <Image handle={props.logo} />
+        <Image styles={Some(image_styles)} handle={props.logo} />
+        <Text
+          styles={Some(text_styles)}
+          size={40.0} 
+          content={format!("Loading...")}
+        />
       </Background>
     </>
   }
