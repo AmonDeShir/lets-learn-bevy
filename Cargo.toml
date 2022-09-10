@@ -3,7 +3,8 @@ resolver = "2"
 
 members = [
   "tic-tac-toe",
-  "flappy-bird"
+  "flappy-bird",
+  "poke-clone",
 ]
 
 [profile.dev]
