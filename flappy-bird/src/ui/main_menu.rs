@@ -41,8 +41,8 @@ fn MainMenuWidget() {
         <Text 
           styles={Some(text_styles)} 
           size={60.0} 
-          content={format!("Tic Tac Toe").to_string()}
-        >{}</Text>
+          content={format!("Flappy Bird").to_string()}
+        />
 
         <Button size={40.0} text={"Play".to_string()} on_event={Some(on_event)} />   
 

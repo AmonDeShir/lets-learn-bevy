@@ -13,25 +13,26 @@ use crate::animator::{TranslationAnimator, AnimationState, ScaleAnimator};
 use crate::asset_loader::Textures;
 use crate::map::{MainCamera, cursor_to_word, tile_pos_from_cursor, Position, Tile, IsFree};
 use crate::turn::{Turn, TurnChangeEvent};
+use crate::winner::Winner;
 
 pub struct GameplayPlugin;
 
 #[derive(Component)]
-pub struct Circle(i16, i16);
+pub struct Circle(pub Position);
 
 #[derive(Component)]
-pub struct Cross(i16, i16);
+pub struct Cross(pub Position);
 
 
 impl Circle {
   pub fn new(pos: &Position) -> Circle {
-    Circle(pos.0.clone(), pos.1.clone())
+    Circle(Position(pos.0.clone(), pos.1.clone()))
   }  
 }
 
 impl Cross {
   pub fn new(pos: &Position) -> Cross {
-    Cross(pos.0.clone(), pos.1.clone())
+    Cross(Position(pos.0.clone(), pos.1.clone()))
   }  
 }
 
@@ -48,6 +49,7 @@ pub fn handle_move(
   mut events: EventReader<MouseButtonInput>, 
   mut ev_turn: EventWriter<TurnChangeEvent>,
   mut gameplay_delay: ResMut<GameplayDelayTimer>,
+  winner: Res<Winner>,
   time: Res<Time>,
   textures: Res<Textures>, 
   turn: Res<Turn>,
@@ -61,6 +63,10 @@ pub fn handle_move(
   gameplay_delay.timer.tick(time.delta());
 
   if !gameplay_delay.timer.finished() {
+    return;
+  }
+
+  if *winner != Winner::None {
     return;
   }
 
@@ -170,6 +176,6 @@ fn clear_gameplay(
 
 fn start_gameplay(mut commands: Commands) {
   commands.insert_resource(GameplayDelayTimer {
-    timer: Timer::new(Duration::from_secs(1), false)
+    timer: Timer::new(Duration::from_millis(500), false)
   }); 
 }

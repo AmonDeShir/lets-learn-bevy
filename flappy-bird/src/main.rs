@@ -1,24 +1,20 @@
-use animator::AnimatorPlugin;
-use asset_loader::AssetLoaderPlugin;
 use bevy::prelude::{App, ClearColor, Color};
-use bevy::DefaultPlugins;
-use bevy::window::WindowDescriptor;
-use cursor::CursorPlugin;
-use gameplay::GameplayPlugin;
-use kayak_ui::bevy::BevyKayakUIPlugin;
-use ui::UiPlugin;
+use bevy::{DefaultPlugins, window::WindowDescriptor};
+use loader::AssetLoaderPlugin;
 use map::MapPlugin;
-use turn::TurnPlugin;
-use winner::WinnerPlugin;
+use pipes::PipesPlugin;
+use player::PlayerPlugin;
+use points::PointsPlugin;
+use ui::UiPlugin;
+use animator::AnimatorPlugin;
 
-mod map;
-mod turn;
-mod cursor;
-mod gameplay;
-mod animator;
-mod asset_loader;
+mod player;
+mod loader;
 mod ui;
-mod winner;
+mod map;
+mod animator;
+mod pipes;
+mod points;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Copy)]
 pub enum GameState {
@@ -32,21 +28,19 @@ fn main() {
     .add_state(GameState::MainMenu)
     .insert_resource(bevy::render::texture::ImageSettings::default_nearest())  
     .insert_resource(WindowDescriptor {
-      title: "Tic Tac Toe".to_string(),
+      title: "Flappy Bird".to_string(),
       width: 612.0,
       height: 612.0,
       ..Default::default()
     })
     .insert_resource(ClearColor(Color::rgb(0.6, 0.6, 0.6)))
     .add_plugins(DefaultPlugins)
-    .add_plugin(BevyKayakUIPlugin)
     .add_plugin(AssetLoaderPlugin)
     .add_plugin(UiPlugin)
     .add_plugin(MapPlugin)
-    .add_plugin(TurnPlugin)
-    .add_plugin(GameplayPlugin)
-    .add_plugin(CursorPlugin)
+    .add_plugin(PlayerPlugin)
     .add_plugin(AnimatorPlugin)
-    .add_plugin(WinnerPlugin)
+    .add_plugin(PipesPlugin)
+    .add_plugin(PointsPlugin)
     .run();
 } 

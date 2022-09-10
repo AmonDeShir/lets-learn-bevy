@@ -1,11 +1,12 @@
 use std::collections::LinkedList;
 
-use bevy::prelude::{Plugin, Component, Commands, EventReader, Res, Query, Camera, GlobalTransform, With, Transform, Handle, Image, Vec3};
+use bevy::prelude::{Plugin, Component, Commands, EventReader, Res, Query, Camera, GlobalTransform, With, Transform, Handle, Image, Vec3, SystemSet};
 use bevy::input::mouse::MouseMotion; 
 use bevy::window::Windows;
 use bevy::render::camera::RenderTarget;
 use bevy::sprite::SpriteBundle;
 
+use crate::GameState;
 use crate::animator::{ScaleAnimator, AnimationState};
 use crate::asset_loader::Textures;
 use crate::map::{cursor_to_word, MainCamera};
@@ -49,6 +50,9 @@ impl Plugin for CursorPlugin {
     app.add_startup_system(init_cursor);
     app.add_system(handle_move);
     app.add_system(handle_turn_change);
+    app.add_system_set(SystemSet::on_enter(GameState::Game).with_system(prepare_cursor));
+    app.add_system_set(SystemSet::on_exit(GameState::Game).with_system(close_cursor));
+
   }
 }
 
@@ -62,7 +66,7 @@ pub fn init_cursor(mut commands: Commands, textures: Res<Textures>) {
       texture: textures.circle.clone(),
       transform: Transform {
         translation: Vec3::new(0.0, 0.0, 2.0),
-        scale: Vec3::new(0.5, 0.5, 1.0),
+        scale: Vec3::new(0.0, 0.0, 1.0),
         ..Default::default()
       },
       ..Default::default()
@@ -123,4 +127,26 @@ pub fn handle_turn_change(
       animator.0.push_back(AnimationState::Request(Vec3::new(0.5, 0.5, 1.0), 0.25));
     }
   }
+}
+
+fn close_cursor(mut query: Query<&mut ScaleAnimator, With<Cursor>>) {
+  let mut animator = query.get_single_mut().expect("Cursor(reset_turn system) error: There is more or less than one cursor!");
+  animator.0.clear();
+}
+
+fn prepare_cursor(
+  textures: Res<Textures>, 
+  mut query: Query<(&mut Transform, &mut ScaleAnimator, &mut Handle<Image>, &mut Mode), With<Cursor>>
+) {
+  let (mut transform, mut animator, mut image, mut mode) = query.get_single_mut().expect("Cursor(reset_turn system) error: There is more or less than one cursor!");
+  
+  mode.0 = ModeValue::Circle;
+  *image = mode.0.to_texture(&textures);
+  transform.scale = Vec3::new(0.0, 0.0, 1.0);
+  
+  if animator.0.len() > 0 {
+    animator.0.clear();
+  }
+
+  animator.0.push_back(AnimationState::Request(Vec3::new(0.5, 0.5, 1.0), 0.25));
 }

@@ -21,7 +21,7 @@ pub struct IsFree(pub bool);
 pub struct MainCamera;
 
 
-#[derive(Component, Debug, PartialEq)]
+#[derive(Component, Debug, PartialEq, Eq, Hash)]
 pub struct Position(pub i16, pub i16);
 
 impl Plugin for MapPlugin {
@@ -104,11 +104,12 @@ pub fn create_map_border(mut commands: Commands, textures: Res<Textures>) {
 }
 
 pub fn show_map(
-  mut tiles: Query<&mut Visibility, (With<Tile>, Without<Border>)>,
+  mut tiles: Query<(&mut Visibility, &mut IsFree), (With<Tile>, Without<Border>)>,
   mut border: Query<&mut Visibility, (With<Border>, Without<Tile>)>,
 ) {
-  for mut visibility in tiles.iter_mut() {
+  for (mut visibility, mut is_free) in tiles.iter_mut() {
     visibility.is_visible = true;
+    is_free.0 = true;
   }
 
   for mut visibility in border.iter_mut() {
