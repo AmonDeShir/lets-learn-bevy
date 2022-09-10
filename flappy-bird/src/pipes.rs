@@ -1,6 +1,6 @@
 use std::f32::consts::PI;
 
-use bevy::{prelude::{Plugin, Component, Commands, Res, With, Query, Transform, Entity, Vec3, SystemSet, ResMut, State, Vec2, BuildChildren, SpatialBundle, Visibility}, sprite::SpriteBundle, time::Time};
+use bevy::{prelude::{Plugin, Component, Commands, Res, With, Query, Transform, Entity, Vec3, SystemSet, ResMut, State, Vec2, BuildChildren, SpatialBundle, Visibility}, sprite::SpriteBundle};
 
 use crate::{map::{MainCamera, WIDTH}, loader::GameTextures, GameState, player::{Player, PLAYER_WIDTH}};
 
@@ -121,7 +121,7 @@ fn collision(
 ) {
   for player in player_query.iter() {
     for pipe in pipes_query.iter() {
-      if collide(player.translation, Vec2 { x: 24.0, y: 24.0}, &pipe) {
+      if collide(player.translation, &pipe) {
         if let Err(_) = state.set(GameState::Result) {};
         continue;
       }
@@ -129,7 +129,7 @@ fn collision(
   }
 }
 
-fn collide(pos: Vec3, size: Vec2, pipe: &Pipe) -> bool {
+fn collide(pos: Vec3, pipe: &Pipe) -> bool {
   let margin = 10.0;
 
   let player_min = Vec2 {
@@ -140,11 +140,6 @@ fn collide(pos: Vec3, size: Vec2, pipe: &Pipe) -> bool {
   let player_max = Vec2 {
     x: (pos.x - 17.0) + PLAYER_WIDTH / 2.0,
     y: (pos.y - 12.0) + PLAYER_WIDTH / 2.0,
-  };
-
-  let pipe_min = Vec2 { 
-    x: pipe.x - (PIPE_WIDTH - margin)  / 2.0,
-    y: 0.0,
   };
 
   let pipe_max = Vec2 { 

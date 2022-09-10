@@ -1,11 +1,10 @@
-use bevy::prelude::{State, ResMut, Commands, Res};
+use bevy::prelude::{State, ResMut, Commands};
 use kayak_ui::bevy::BevyContext;
 use kayak_ui::core::{rsx, render, widget, OnEvent, EventType};
 use kayak_ui::widgets::{App, Text, Background};
 use kayak_ui::core::styles::{StyleProp, Units, Style};
 
 use crate::GameState;
-use crate::points::Points;
 use crate::ui::button::Button;
 
 #[widget]
@@ -55,9 +54,7 @@ fn GameOver() {
     },
     _ => {}
   });
-
-  let points = context.query_world::<Res<Points>, _, String>(|points| format!("Score: {}", points.0));
-
+  
   rsx! {
     <>
       <Background styles={Some(container_styles)}>
